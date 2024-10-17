@@ -1,17 +1,14 @@
 -- Task: Create a stored procedure ComputeAverageWeightedScoreForUser that computes and stores the average weighted score for a student.
 
 -- Drop the procedure if it already exists
-DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
+DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUsers;
 
--- Create the procedure
 DELIMITER $$
 CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
 BEGIN
 	UPDATE users AS users,
-
 	       (SELECT users.id, SUM(score * weight) / SUM(weight) AS weight_avg
-	       
-		FROM users AS users JOIN corrections AS correct ON users.id = correct.user_id
+	       FROM users AS users JOIN corrections AS correct ON users.id = correct.user_id
 	       JOIN projects AS proj ON correct.project_id = proj.id
 	       GROUP BY users.id)
 
