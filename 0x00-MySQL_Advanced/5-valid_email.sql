@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Create the trigger to reset 'valid_email' when 'email' changes
-CREATE TRIGGER reset_valid_email
-BEFORE UPDATE ON users
+DELIMITER $$ ;
+CREATE TRIGGER resets_valid_email BEFORE UPDATE ON users
 FOR EACH ROW
 BEGIN
-    IF OLD.email <> NEW.email THEN
-        SET NEW.valid_email = 0;
-    END IF;
+	IF NEW.email != OLD.email THEN
+		SET NEW.valid_email = 0;
+	END IF;
 END;
+DELIMITER ;
