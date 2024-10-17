@@ -4,26 +4,19 @@
 DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUser;
 
 -- Create the procedure
-DELIMITER //
-
-CREATE PROCEDURE ComputeAverageWeightedScoreForUser(
-    IN user_id INT
+DELIMITER $$
+CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
 BEGIN
-    DECLARE weighted_average DECIMAL(10, 2);
-    -- Compute the weighted average score for the given user
-    SELECT 
-        SUM(score * weight) / SUM(weight) INTO weighted_average
-    FROM 
-        scores
-    WHERE 
-        scores.user_id = user_id;
+	UPDATE users AS users,
 
-    -- Store the weighted average in the users table
-    -- (assuming users table has an avg_weighted_score column)
-    UPDATE users
-    SET avg_weighted_score = weighted_average
-    WHERE id = user_id;
+	       (SELECT users.id, SUM(score * weight) / SUM(weight) AS weight_avg
+	       
+		FROM users AS users JOIN corrections AS correct ON users.id = correct.user_id
+	       JOIN projects AS proj ON correct.project_id = proj.id
+	       GROUP BY users.id)
 
-END //
-
+	AS weight
+	SET users.average_score = weight.weight_avg
+	WHERE users.id = weight.id;
+END $$
 DELIMITER ;
