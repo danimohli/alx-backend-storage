@@ -1,47 +1,64 @@
 -- Task: Create a stored procedure ComputeAverageWeightedScoreForUsers that computes and stores the average weighted score for all students.
 
--- Drop the procedure if it already exists
-DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUsers;
-
--- Create the procedure
-DELIMITER //
-
+DELIMITER $$
+-- The procedure if not alrea exists
 CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
 BEGIN
-    DECLARE done INT DEFAULT 0;  -- Declare a flag for the loop
-    DECLARE user_id INT;         -- Variable to store user ID during iteration
-    DECLARE weighted_average DECIMAL(10, 2);  -- Variable to store the weighted average score
-    DECLARE user_cursor CURSOR FOR SELECT id FROM users;  -- Cursor to iterate through all users
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;  -- Handler to exit the loop when no more rows are found
+    DECLARE total_score DECIMAL(10, 2);
+    DECLARE total_weight DECIMAL(10, 2);
+    DECLARE average_weighted_score DECIMAL(10, 2);
 
-    -- Open the cursor to go through each user
-    OPEN user_cursor;
+    -- Iterate over all users
+    DECLARE done INT DEFAULT 0;
+    DECLARE user_id INT;
 
+    -- Declare a cursor for all users
+    DECLARE cur CURSOR FOR
+        SELECT id FROM users;
+
+    -- Declare a handler to set 'done' when the cursor is finished
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Open the cursor
+    OPEN cur;
+
+    -- Iterate through each user
     read_loop: LOOP
-        -- Fetch the next user ID from the cursor
-        FETCH user_cursor INTO user_id;
+        -- Fetch the next user ID
+        FETCH cur INTO user_id;
+
+        -- If no more rows, exit the loop
         IF done THEN
             LEAVE read_loop;
         END IF;
 
-        -- Compute the weighted average score for the current user
-        SELECT 
-            SUM(score * weight) / SUM(weight) INTO weighted_average
-        FROM 
-            scores
-        WHERE 
-            scores.user_id = user_id;
+        -- Initialize the total score and weight
+        SET total_score = 0;
+        SET total_weight = 0;
 
-        -- Store the weighted average in the users table (assuming users table has an avg_weighted_score column)
+        -- Calculate the total score and weight for each project for this user
+        SELECT SUM(score * weight), SUM(weight)
+        INTO total_score, total_weight
+        FROM corrections
+        INNER JOIN projects ON corrections.project_id = projects.id
+        WHERE corrections.user_id = user_id;
+
+        -- Calculate the average weighted score for this user
+        IF total_weight > 0 THEN
+            SET average_weighted_score = total_score / total_weight;
+        ELSE
+            SET average_weighted_score = 0;
+        END IF;
+
+        -- Update the average weighted score for the user
         UPDATE users
-        SET avg_weighted_score = IFNULL(weighted_average, 0)  -- If the weighted average is NULL, store 0
+        SET average_weighted_score = average_weighted_score
         WHERE id = user_id;
-        
+
     END LOOP;
 
-    -- Close the cursor after the loop ends
-    CLOSE user_cursor;
-
-END //
+    -- Close the cursor
+    CLOSE cur;
+END $$
 
 DELIMITER ;
