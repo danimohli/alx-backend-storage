@@ -4,7 +4,5 @@
 -- columns, with a default year of 2022 if the band hasn't split.
 
 -- Select bands with Glam rock as their main style and calculate their lifespan
-SELECT band_name,
-FROM metal_bands
-WHERE style LIKE '%Glam%'
-ORDER BY lifespan DESC;
+SELECT band_name, COALESCE(split, 2022) - formed as lifespan FROM metal_bands
+WHERE style LIKE '%Glam rock%' ORDER BY lifespan DESC;
