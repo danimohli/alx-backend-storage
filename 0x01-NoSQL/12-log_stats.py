@@ -2,31 +2,34 @@
 """
 Script to provide stats about Nginx logs stored in MongoDB.
 """
+
 from pymongo import MongoClient
 
-methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
-
-def log_stats(mongo_collection, option=None):
+def log_stats():
     """
-    Display statistics about Nginx logs stored in MongoDB.
+    Provide statistics about Nginx logs.
     """
-    items = {}
-    if option:
-        value = mongo_collection.count_documents(
-            {"method": {"$regex": option}})
-        print(f"\tmethod {option}: {value}")
-        return
+    # Connect to MongoDB
+    client = MongoClient()
+    db = client.logs  # Access the 'logs' database
+    collection = db.nginx  # Access the 'nginx' collection
 
-    result = mongo_collection.count_documents(items)
-    print(f"{result} logs")
+    # Count total logs
+    total_logs = collection.count_documents({})
+
+    # Count logs by methods
+    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print(f"{total_logs} logs")
     print("Methods:")
-    for method in METHODS:
-        log_stats(nginx_collection, method)
-    status_check = mongo_collection.count_documents({"path": "/status"})
+    for method in methods:
+        count = collection.count_documents({"method": method})
+        print(f"\tmethod {method}: {count}")
+
+    # Count logs with method GET and path /status
+    status_check = collection.count_documents({"method": "GET", "path": "/status"})
     print(f"{status_check} status check")
 
 
 if __name__ == "__main__":
-    nginx_collection = MongoClient('mongodb://127.0.0.1:27017').logs.nginx
-    log_stats(nginx_collection)
+    log_stats()
