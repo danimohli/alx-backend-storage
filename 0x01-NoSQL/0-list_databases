@@ -17,7 +17,6 @@ def list_databases():
     databases = client.list_database_names()
     return databases
 
-
 if __name__ == "__main__":
     for db in list_databases():
         print(db)
