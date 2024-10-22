@@ -3,6 +3,7 @@
 Function to insert a new document in a MongoDB collection.
 """
 
+
 def insert_school(mongo_collection, **kwargs):
     """
     Insert a new document into the specified MongoDB collection.
