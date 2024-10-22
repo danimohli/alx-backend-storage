@@ -5,7 +5,8 @@ It fetches data from the 'logs' database and 'nginx' collection.
 
 It prints:
 1. Total number of logs (documents) in the collection.
-2. Method statistics for each HTTP method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].
+2. Method statistics for each HTTP method in ['GET', 'POST', 'PUT',
+'PATCH', 'DELETE'].
 3. Number of logs where the method is 'GET' and the path is '/status'.
 """
 from pymongo import MongoClient
