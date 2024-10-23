@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Python Exercise for redis
+Python Exercise for Redis with increment functionality
 """
 import redis
 import uuid
@@ -32,7 +32,7 @@ def count_calls(method: Callable) -> Callable:
 
 class Cache:
     """
-    Class Cache for python impl of redis
+    Class Cache for Python implementation of Redis
     """
     def __init__(self):
         """
@@ -104,3 +104,19 @@ class Cache:
             None if the key does not exist.
         """
         return self.get(key, lambda data: int(data))
+
+    def increment_value(self, key: str, amount: int = 1) -> int:
+        """
+        Increment the integer value stored at the key by the given amount.
+
+        Args:
+            key (str): The Redis key where the value is stored.
+            amount (int): The amount to increment by (default: 1).
+
+        Returns:
+            int: The new value after incrementing.
+        """
+        if not self._redis.exists(key):
+            self._redis.set(key, 0)
+        
+        return self._redis.incrby(key, amount)
